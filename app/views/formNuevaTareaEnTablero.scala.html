@@ -1,0 +1,88 @@
+@(usuario: Usuario, tablero: Tablero, tareaForm: Form[Tarea], mensaje: String)
+@scripts = {
+    <script>
+        function transformMarkdown() {
+            var converter = new showdown.Converter(),
+                text = $('#cuerpo').val(),
+                html = converter.makeHtml(text);
+            $("#vistaprevia").html(html)
+        }
+
+        $("#cuerpo").on("keyup", transformMarkdown);
+        $(transformMarkdown);
+
+        const datetimepickerFechaInicio = $("#datetimepickerFechaInicio");
+        const datetimepickerFechaLimite = $("#datetimepickerFechaLimite");
+
+        datetimepickerFechaInicio.datetimepicker({
+            locale: "es",
+            showClear: true
+        });
+
+        datetimepickerFechaLimite.datetimepicker({
+            locale: "es",
+            minDate: moment().subtract({minutes: 1}),
+            useCurrent: false,
+            showClear: true
+        });
+
+        $(function () {
+            datetimepickerFechaInicio.on("dp.change", function (e) {
+                $("#datetimepickerFechaLimite").data("DateTimePicker").minDate(moment.min(e.date ? moment(e.date) : moment(), moment().subtract({minutes: 1})))
+            });
+            datetimepickerFechaLimite.on("dp.change", function (e) {
+                $("#datetimepickerFechaInicio").data("DateTimePicker").maxDate(e.date ? moment(e.date) : false)
+            });
+        });
+    </script>
+}
+
+@main("Nueva tarea", scripts) {
+    @if(mensaje != "") {
+        <div class="alert alert-danger">
+        @mensaje
+        </div>
+    }
+    <h1>Nueva tarea del tablero @tablero.getNombre</h1>
+    @helper.form(action = routes.GestionTablerosController.crearNuevaTareaEnTablero(usuario.getId(), tablero.getId())) {
+        <fieldset>
+            <legend>Nueva tarea</legend>
+            @helper.inputText(tareaForm("titulo"), '_label -> "Titulo", 'size -> 40)
+            <div class="row">
+                <div class="col-md-6">
+                @helper.textarea(tareaForm("cuerpo"), args = '_label -> "Cuerpo", 'rows -> 10, 'cols -> 40)
+                </div>
+                <div class="col-md-5 col-md-offset-1">
+                    <dl class=" " id="vistaprevia_field">
+                        <dt><label for="vistaprevia">Vista Previa</label></dt>
+                        <dd>
+                            <p id="vistaprevia"></p>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="row">
+                <div class='col-sm-6'>
+                @helper.inputText(tareaForm("fechaInicio"),
+                    '_label -> "Fecha de inicio",
+                    'size -> 40,
+                    'id -> "datetimepickerFechaInicio",
+                    '_help -> "Formato: dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+            <div class="row">
+                <div class='col-sm-6'>
+                @helper.inputText(tareaForm("fechaLimite"),
+                    '_label -> "Fecha límite",
+                    'size -> 40,
+                    'id -> "datetimepickerFechaLimite",
+                    '_help -> "Formato: dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+        </fieldset>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Guardar">
+            <a class="btn btn-warning" href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId())">Cancelar</a>
+        </p>
+    }
+}

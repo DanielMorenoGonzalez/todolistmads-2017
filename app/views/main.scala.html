@@ -1,0 +1,82 @@
+@*
+ * This template is called from the `index` template. This template
+ * handles the rendering of the page header and body tags. It takes
+ * two arguments, a `String` for the title of the page and an `Html`
+ * object to insert into the body of the page.
+ *@
+@(title: String, scripts: Html = Html(""))(content: Html)
+
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        @* Here's where we render the page title `String`. *@
+        <title>@title</title>
+        <link href="@routes.Assets.versioned("bootstrap/css/bootstrap.min.css")" rel="stylesheet" media="screen">
+        <link href="@routes.Assets.versioned("stylesheets/jumbotron-acerca-de.css")" rel="stylesheet" media="screen">
+        <link href="@routes.Assets.versioned("stylesheets/bootstrap-datetimepicker.min.css")" rel="stylesheet" media="screen">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+        <link rel="icon" type="image/png" sizes="32x32" href="@routes.Assets.versioned("images/favicon-32x32.png")">
+        <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.7.0/fullcalendar.min.css">
+        <link rel="stylesheet" media="print" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.7.0/fullcalendar.print.css">
+        <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        <script src="@routes.Assets.versioned("javascripts/hello.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/jscolor.min.js")" type="text/javascript"></script>
+    </head>
+    <body>
+        <!-- Barra de navegación -->
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand">TodoList</a>
+                </div>
+                @if(session.get("connected") != null) {
+                    <ul id="menuprincipal" class="nav navbar-nav">
+                        <li><a href="@routes.GestionTareasController.listaTareasPendientes(Long.valueOf(session.get("connected")))">
+                            Mis tareas</a></li>
+                        <li><a href="@routes.GestionTablerosController.listarTableros(Long.valueOf(session.get("connected")))">Mis tableros</a></li>
+                        <li><a href="@routes.AcercaDeController.acercaDe()">Acerca de</a></li>
+                    </ul>
+                } else {
+                    <ul id="menuprincipal" class="nav navbar-nav">
+                        <li><a href="@routes.AcercaDeController.acercaDe()">Acerca de</a></li>
+                    </ul>
+                }
+                @if(session.get("connected") != null) {
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button">@session.get("username")<span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="@routes.UsuarioController.detalleUsuario(Long.valueOf(session.get("connected")))">Perfil</a></li>
+                                <li class="divider">
+                                    <li><a href="@routes.UsuarioController.logout()">Salir</a></li>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <!-- Si no hay sesión iniciada -->
+                } else {
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="@routes.UsuarioController.registroUsuario()"><span class="glyphicon glyphicon-user"></span> Registrarme</a></li>
+                        <li><a href="@routes.UsuarioController.loginUsuario()"><span class="glyphicon glyphicon-log-in"></span> Iniciar sesión</a></li>
+                    </ul>
+                }
+            </div>
+        </nav>
+
+        <div class="container">
+        @content
+        </div>
+        <script src="@routes.Assets.versioned("javascripts/jquery.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/moment-with-locales.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("bootstrap/js/bootstrap.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/showdown.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/cambiarActiveNavbar.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/fecha-nacimiento.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/bootstrap-confirmation.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/bootstrap-datetimepicker.min.js")" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.7.0/fullcalendar.min.js" type="text/javascript"></script>
+        <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>
+        @scripts
+    </body>
+</html>

@@ -1,0 +1,47 @@
+@(registroForm: Form[Registro], mensaje: String)
+@main("Registro en ToDoList") {
+    @if(mensaje != "") {
+        <div class="col-xs-6 col-xs-offset-3 alert alert-danger">
+            @mensaje
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Crear cuenta</h3></div>
+                <div class="panel-body">
+                    @helper.form(action = routes.UsuarioController.registroUsuario()) {
+                        <fieldset>
+                            @helper.inputText(registroForm("login"), '_label -> "Login", '_showConstraints -> false, 'class -> "form-control col-xs-12", 'style -> "margin-bottom:10px;", 'required -> true)
+                            @helper.inputText(registroForm("email"), '_label -> "Email", '_showConstraints -> false, 'class -> "form-control col-xs-12", 'style -> "margin-bottom:10px;", 'required -> true)
+                            @helper.inputPassword(registroForm("password"), '_label -> "Contraseña", '_showConstraints -> false, 'class -> "form-control col-xs-12", 'style -> "margin-bottom:10px;", 'required -> true)
+                            @helper.inputPassword(registroForm("confirmacion"), '_label -> "Repite contraseña", '_showConstraints -> false, 'class -> "form-control col-xs-12", 'style -> "margin-bottom:10px;", 'required -> true)
+                        </fieldset>
+                        <div class="form-group">
+                            <div class="col-xs-12">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    Registrarse
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-xs-10 col-xs-offset-1">
+                            ¿Ya tienes cuenta? <a href="@routes.UsuarioController.loginUsuario()">Iniciar sesión</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

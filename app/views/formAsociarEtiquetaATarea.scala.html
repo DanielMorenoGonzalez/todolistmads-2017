@@ -1,0 +1,35 @@
+@(usuario: Usuario, tarea: Tarea, etiquetas: List[Etiqueta])
+@colorCompletoConAlmohadilla(color: String) = @{ "#" + color }
+
+@main("Asignar etiqueta a tarea") {
+    <h1>Asignar etiqueta a la tarea <strong>@tarea.getTitulo</strong></h1>
+    @helper.form(action = routes.GestionTareasController.asociarEtiquetaATarea(tarea.getId)) {
+        <fieldset>
+            <legend>Asignar etiqueta</legend>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <dl id="titulo_field">
+                        <dt><label for="titulo">Selecciona etiqueta</label></dt>
+                            <select class="form-control" id="titulo" name="titulo">
+                                @for(etiqueta <- etiquetas) {
+                                    <dd><option id="@etiqueta.getTitulo" value="@etiqueta.getTitulo()">@etiqueta.getTitulo</dd>
+                                }
+                            </select>
+                        </dl>
+                    </div>
+                </div>
+        </fieldset>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Guardar">
+            @if(tarea.getTablero != null) {
+                <a class="btn btn-warning" href="@routes.GestionTareasController.listaTareasPendientesTablero(tarea.getTablero.getId)">
+                    Cancelar
+                </a>
+            } else {
+                <a class="btn btn-warning" href="@routes.GestionTareasController.listaTareasPendientes(usuario.getId)">
+                    Cancelar
+                </a>
+            }
+        </p>
+    }
+}

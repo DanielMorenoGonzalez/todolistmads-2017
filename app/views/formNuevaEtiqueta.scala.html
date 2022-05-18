@@ -1,0 +1,30 @@
+@(usuario: Usuario, etiquetaForm: Form[Etiqueta], mensaje: String)
+
+@main("Nueva etiqueta") {
+    @if(mensaje != "") {
+        <div class="alert alert-danger">
+            @mensaje
+        </div>
+    }
+    <h1>Nueva etiqueta</h1>
+    @helper.form(action = routes.GestionEtiquetasController.creaNuevaEtiqueta(usuario.getId())) {
+        <fieldset>
+            <legend>Nueva etiqueta</legend>
+            <div class="row">
+                <div class="col-sm-6">
+                    @helper.inputText(etiquetaForm("titulo"), '_label -> "Titulo", 'size -> 40, 'class -> "form-control")
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    @helper.inputText(etiquetaForm("color"), '_label -> "Color", '_id -> "color",
+                        'class -> "jscolor form-control", 'readOnly -> "readOnly")
+                </div>
+            </div>
+        </fieldset>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Guardar">
+            <a class="btn btn-warning" href="@routes.GestionEtiquetasController.listarEtiquetas(usuario.getId())">Cancelar</a>
+        </p>
+    }
+}

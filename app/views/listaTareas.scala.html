@@ -1,0 +1,360 @@
+@import java.text.DateFormat
+@import java.util
+@(tareas: util.List[Tarea], usuario: Usuario, mensaje: String, pendientesOTerminadas: String, etiquetas: List[Etiqueta])
+@urlTareaABorrar = {""}
+@colorCompletoConAlmohadilla(color: String) = @{ "#" + color }
+@scripts = {
+    <script type="text/javascript">
+
+        function quitarEtiquetaDeTarea(urlQuitar) {
+            $.ajax({
+                url: urlQuitar,
+                type: 'POST',
+                success: function(results) {
+                    //refresh the page
+                    location.reload();
+                }
+            });
+        }
+
+        function finalizarORestaurarTarea(urlTareaATerminarOARestaurar) {
+            $.ajax({
+                url: urlTareaATerminarOARestaurar,
+                type: 'POST',
+                success: function () {
+                    //refresh the page
+                    location.reload();
+                }
+            });
+        }
+
+        $('[data-toggle=confirmation]').confirmation({
+            rootSelector: '[data-toggle=confirmation]',
+            onConfirm: function () {
+                var boton = this[0];
+                urlTareaABorrar = boton.name;
+                $.ajax({
+                    url: urlTareaABorrar,
+                    type: 'DELETE',
+                    success: function () {
+                        //refresh the page
+                        location.reload();
+                    }
+                });
+            },
+        });
+
+        $('.collapse-content').each(function (i, obj) {
+            var converter = new showdown.Converter(),
+                text = obj.innerHTML;
+            obj.innerHTML = converter.makeHtml(text);
+        });
+
+        $(document).ready(function () {
+            // page is now ready, initialize the calendar...
+            $('#calendar').fullCalendar({
+                locale: 'es',
+                buttonText: {
+                    today: 'hoy'
+                },
+                events: [
+                    @for(tarea <- tareas) {
+                    {
+                        title: '@tarea.getTitulo',
+                        start: '@tarea.getFechaLimite',
+                        end: '@tarea.getFechaLimite'
+                    },
+                    }
+                ],
+                timeFormat: 'H(:mm)'
+                // put your options and callbacks here
+            })
+        });
+
+        function invertCssColor(color) {
+            var colorEntero = "#".concat(color);
+            var rgb = invertColor(hexColor2rgb(colorEntero));
+            return rgb2hexColor(rgb);
+        }
+
+        function invertColor(rgb) {
+            var yuv = rgb2yuv(rgb);
+            var factor = 230;
+            var threshold = 110;
+            yuv.y = clamp(yuv.y + (yuv.y > threshold ? -factor : factor));
+            return yuv2rgb(yuv);
+        }
+
+        function rgb2hexColor(rgb) {
+            return '#' + dec2hex(rgb.r) + dec2hex(rgb.g) + dec2hex(rgb.b);
+        }
+
+        function hexColor2rgb(color) {
+            color = color.substring(1); // remove #
+            return {
+                r: parseInt(color.substring(0, 2), 16),
+                g: parseInt(color.substring(2, 4), 16),
+                b: parseInt(color.substring(4, 6), 16)
+            };
+        }
+
+        function rgb2hexColor(rgb) {
+            return '#' + dec2hex(rgb.r) + dec2hex(rgb.g) + dec2hex(rgb.b);
+        }
+
+        function dec2hex(n) {
+            var hex = n.toString(16);
+            if (hex.length < 2) {
+                return '0' + hex;
+            }
+            return hex;
+        }
+
+        function rgb2yuv(rgb){
+            var y = clamp(rgb.r *  0.29900 + rgb.g *  0.587   + rgb.b * 0.114);
+            var u = clamp(rgb.r * -0.16874 + rgb.g * -0.33126 + rgb.b * 0.50000 + 128);
+            var v = clamp(rgb.r *  0.50000 + rgb.g * -0.41869 + rgb.b * -0.08131 + 128);
+            return {y:y, u:u, v:v};
+        }
+
+        function yuv2rgb(yuv){
+            var y = yuv.y;
+            var u = yuv.u;
+            var v = yuv.v;
+            var r = clamp(y + (v - 128) *  1.40200);
+            var g = clamp(y + (u - 128) * -0.34414 + (v - 128) * -0.71414);
+            var b = clamp(y + (u - 128) *  1.77200);
+            return {r:r,g:g,b:b};
+        }
+
+        function clamp(n){
+            if (n<0) { return 0;}
+            if (n>255) { return 255;}
+            return Math.floor(n);
+        }
+
+        var listaEtiquetas = document.getElementsByTagName("button");
+        for (var i = 0; i < listaEtiquetas.length; i++) {
+            var idEtiqueta = listaEtiquetas[i].getAttribute("class");
+            idEtiqueta = idEtiqueta.split(" ")[0];
+            var colorEtiqueta = listaEtiquetas[i].getAttribute("name");
+            var colorTextoEtiqueta = invertCssColor(colorEtiqueta);
+            $( "." + idEtiqueta ).css({
+                "color": colorTextoEtiqueta,
+                "background-color": colorEtiqueta
+            });
+        }
+    </script>
+}
+
+@main("Tareas del usuario " + usuario.getLogin, scripts) {
+
+    <h2>Mis tareas @pendientesOTerminadas</h2>
+    <ul class="nav nav-tabs nav-justified">
+        <li><a href="@routes.GestionTareasController.listaTareasPendientes(usuario.getId)">Tareas pendientes</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasTerminadas(usuario.getId)">Tareas terminadas</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasCalendario(usuario.getId)">Calendario</a></li>
+    </ul>
+
+    <br>
+
+    @if(mensaje != null) {
+        <div class="alert alert-success">@mensaje</div>
+    }
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    <a class="btn btn-primary" href="@routes.GestionTareasController.formularioNuevaTarea(usuario.getId())">
+                        <span class="glyphicon glyphicon-plus"></span> Crear tarea
+                    </a>
+                </th>
+                <th></th>
+                <th></th>
+                <th>
+                    <a class="btn btn-default" href="@routes.GestionEtiquetasController.listarEtiquetas(usuario.getId())">
+                        <span class="glyphicon glyphicon-tag"></span> Etiquetas
+                    </a>
+                </th>
+            </tr>
+            <tr>
+                <th>Tareas</th>
+                <th>Fecha de inicio</th>
+                <th>Fecha límite</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(tareas.isEmpty) {
+                <tr>
+                    <td class="col-sm-5">
+                        @if(pendientesOTerminadas == "pendientes") {
+                            <h4><small>No hay tareas pendientes</small></h4>
+                        } else {
+                            <h4><small>No hay tareas terminadas</small></h4>
+                        }
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            } else {
+                @for(tarea <- tareas) {
+                    <tr>
+                        @if(!tarea.getCuerpo.isEmpty) {
+                            @if(tarea.getEtiqueta != null) {
+                                <td class="col-sm-5">
+                                    @if(pendientesOTerminadas == "pendientes") {
+                                        <a data-toggle="collapse" data-target="#@tarea.getId" style="cursor: pointer; text-decoration: none; color: inherit;">
+                                            @tarea.getTitulo &nbsp;
+                                        </a>
+                                        <a type="button" href="@routes.GestionTareasController.formularioAsociarEtiquetaATarea(tarea.getId)" style="text-decoration: none;">
+                                            <button type="submit" name="@tarea.getEtiqueta.getColor" class="@tarea.getEtiqueta.getId botoncolor btn" style="background-color:@colorCompletoConAlmohadilla(tarea.getEtiqueta.getColor); text-decoration:none;">
+                                                <strong>@tarea.getEtiqueta.getTitulo</strong> <span class="glyphicon glyphicon-tag"></span>
+                                            </button>
+                                        </a>
+                                            <a onmouseover="" style="cursor: pointer;"
+                                            onclick="quitarEtiquetaDeTarea('@routes.GestionTareasController.quitarEtiquetaDeTarea(tarea.getEtiqueta().getId(), tarea.getId())')">
+                                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                            </a>
+                                    } else {
+                                        <a data-toggle="collapse" data-target="#@tarea.getId" style="cursor: pointer; text-decoration: none; color: inherit;">
+                                            @tarea.getTitulo &nbsp;
+                                        </a>
+                                        <button type="submit" name="@tarea.getEtiqueta.getColor" class="@tarea.getEtiqueta.getId botoncolor btn" style="background-color:@colorCompletoConAlmohadilla(tarea.getEtiqueta.getColor); text-decoration:none;">
+                                            <strong>@tarea.getEtiqueta.getTitulo</strong> <span class="glyphicon glyphicon-tag"></span>
+                                        </button>
+                                    }
+                                </td>
+                            } else {
+                                @if(pendientesOTerminadas == "pendientes") {
+                                    @if(etiquetas.size() == 0) {
+                                        <td class="col-sm-5">
+                                            <a data-toggle="collapse" data-target="#@tarea.getId" style="cursor: pointer; text-decoration: none; color: inherit;">
+                                                @tarea.getTitulo &nbsp;
+                                            </a>
+                                            <a data-toggle="tooltip" title="No hay etiquetas">
+                                                <span class="glyphicon glyphicon-tag"></span>
+                                            </a>
+                                        </td>
+                                    } else {
+                                        <td class="col-sm-5">
+                                            <a data-toggle="collapse" data-target="#@tarea.getId" style="cursor: pointer; text-decoration: none; color: inherit;">
+                                                @tarea.getTitulo &nbsp;
+                                            </a>
+                                            <a href="@routes.GestionTareasController.formularioAsociarEtiquetaATarea(tarea.getId)">
+                                                <span class="glyphicon glyphicon-tag"></span>
+                                            </a>
+                                        </td>
+                                    }
+                                } else {
+                                    <td class="col-sm-5">
+                                        <a data-toggle="collapse" data-target="#@tarea.getId" style="cursor: pointer; text-decoration: none; color: inherit;">
+                                            @tarea.getTitulo &nbsp;
+                                        </a>
+                                    </td>
+                                }
+                            }
+                        } else {
+                            @if(tarea.getEtiqueta != null) {
+                                <td class="col-sm-5">
+                                    @if(pendientesOTerminadas == "pendientes") {
+                                        @tarea.getTitulo &nbsp;
+                                        <a type="button" href="@routes.GestionTareasController.formularioAsociarEtiquetaATarea(tarea.getId)" style="text-decoration: none;">
+                                            <button type="submit" name="@tarea.getEtiqueta.getColor" class="@tarea.getEtiqueta.getId botoncolor btn" style="background-color:@colorCompletoConAlmohadilla(tarea.getEtiqueta.getColor); text-decoration:none;">
+                                                <strong>@tarea.getEtiqueta.getTitulo</strong> <span class="glyphicon glyphicon-tag"></span>
+                                            </button>
+                                        </a>
+                                            <a onmouseover="" style="cursor: pointer;"
+                                            onclick="quitarEtiquetaDeTarea('@routes.GestionTareasController.quitarEtiquetaDeTarea(tarea.getEtiqueta().getId(), tarea.getId())')">
+                                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                            </a>
+                                    } else {
+                                        @tarea.getTitulo &nbsp;
+                                        <button type="submit" name="@tarea.getEtiqueta.getColor" class="@tarea.getEtiqueta.getId botoncolor btn" style="background-color:@colorCompletoConAlmohadilla(tarea.getEtiqueta.getColor); text-decoration:none;">
+                                            <strong>@tarea.getEtiqueta.getTitulo</strong> <span class="glyphicon glyphicon-tag"></span>
+                                        </button>
+                                    }
+                                </td>
+                            } else {
+                                @if(pendientesOTerminadas == "pendientes") {
+                                    @if(etiquetas.size() == 0) {
+                                        <td class="col-sm-5">
+                                            @tarea.getTitulo &nbsp;
+                                            <a data-toggle="tooltip" title="No hay etiquetas">
+                                                <span class="glyphicon glyphicon-tag"></span>
+                                            </a>
+                                        </td>
+                                    } else {
+                                        <td class="col-sm-5">
+                                            @tarea.getTitulo &nbsp;
+                                            <a href="@routes.GestionTareasController.formularioAsociarEtiquetaATarea(tarea.getId)">
+                                                <span class="glyphicon glyphicon-tag"></span>
+                                            </a>
+                                        </td>
+                                    }
+                                } else {
+                                    <td class="col-sm-5">
+                                        @tarea.getTitulo &nbsp;
+                                    </td>
+                                }
+                            }
+                        }
+                    <td>
+                        @if(tarea.getFechaInicio != null) {
+                            @DateFormat.getInstance().format(tarea.getFechaInicio)
+                        }
+                    </td>
+                    <td>
+                        @if(tarea.getFechaLimite != null) {
+                            @DateFormat.getInstance().format(tarea.getFechaLimite)
+                        }
+                    </td>
+                    <td>
+                        @if(pendientesOTerminadas == "pendientes") {
+                            <form action="@routes.GestionTareasController.grabaTareaTerminada(tarea.getId())" method="post"
+                            style="display: inline;">
+                                <button type="submit" name="finalizar" value="finalizar" class="btn-link">
+                                        <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+                                </button>
+                            </form>
+                                &nbsp;
+                        }
+                        @if(pendientesOTerminadas == "pendientes") {
+                        <a href="@routes.GestionTareasController.formularioEditaTarea(tarea.getId())">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                        </a>
+                            &nbsp;
+                        }
+
+                        <!-- Las tareas terminadas se podrán restaurar -->
+                        @if(pendientesOTerminadas == "terminadas") {
+                            <form action="@routes.GestionTareasController.restaurarTareaTerminada(tarea.getId())" method="post"
+                            style="display: inline;">
+                                <button type="submit" name="restaurar" value="restaurar" class="btn-link">
+                                    <a title="Restaurar tarea">
+                                        <span class="glyphicon glyphicon-repeat"></span>
+                                    </a>
+                                </button>
+                            </form>
+                                &nbsp;
+                        }
+                        <button id="borrarTareaId" class="btn-link m-0 p-0" data-toggle="confirmation" name="@routes.GestionTareasController.borraTarea(tarea.getId())"
+                       data-title="¿Borrar Tarea?" data-content="No podrás deshacer esta acción"
+                       data-btn-ok-label="Borrar" data-btn-ok-icon="glyphicon glyphicon-trash" data-btn-ok-class="btn-success"
+                       data-btn-cancel-label="Cancelar" data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger">
+                           <a onmouseover="" style="cursor: pointer;">
+                               <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                           </a>
+                        </button>
+                    </td>
+                    </tr>
+                    <tr id="@tarea.getId" class="collapse">
+                        <td colspan="3" class="collapse-content">@tarea.getCuerpo</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}

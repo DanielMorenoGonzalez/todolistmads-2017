@@ -1,0 +1,22 @@
+.p-0 {
+    padding: 0 !important;
+}
+
+.m-0 {
+    margin: 0 !important;
+}
+
+#calendar {
+    margin: 10px 0 50px;
+}
+
+.alert-top {
+    top: calc(5% + 20px);
+    right: calc(15% - 30px);
+    width: 300px;
+    display: none;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    z-index: 10;
+}

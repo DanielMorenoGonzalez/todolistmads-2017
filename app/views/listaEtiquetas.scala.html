@@ -1,0 +1,183 @@
+@import java.util
+@(etiquetas: util.List[Etiqueta], usuario: Usuario, mensaje: String)
+@urlEtiquetaABorrar = {""}
+@colorCompletoConAlmohadilla(color: String) = @{ "#" + color }
+@scripts = {
+    <script type="text/javascript">
+        $('[data-toggle=confirmation]').confirmation({
+            rootSelector: '[data-toggle=confirmation]',
+            onConfirm: function () {
+                var boton = this[0];
+                urlEtiquetaABorrar = boton.name;
+                $.ajax({
+                    url: urlEtiquetaABorrar,
+                    type: 'DELETE',
+                    success: function () {
+                        //refresh the page
+                        location.reload();
+                    }
+                });
+            },
+        });
+
+        function parImpar(numero) {
+            if(numero % 2 == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        function invertCssColor(color) {
+            var colorEntero = "#".concat(color);
+            var rgb = invertColor(hexColor2rgb(colorEntero));
+            return rgb2hexColor(rgb);
+        }
+
+        function invertColor(rgb) {
+            var yuv = rgb2yuv(rgb);
+            var factor = 230;
+            var threshold = 110;
+            yuv.y = clamp(yuv.y + (yuv.y > threshold ? -factor : factor));
+            return yuv2rgb(yuv);
+        }
+
+        function rgb2hexColor(rgb) {
+            return '#' + dec2hex(rgb.r) + dec2hex(rgb.g) + dec2hex(rgb.b);
+        }
+
+        function hexColor2rgb(color) {
+            color = color.substring(1); // remove #
+            return {
+                r: parseInt(color.substring(0, 2), 16),
+                g: parseInt(color.substring(2, 4), 16),
+                b: parseInt(color.substring(4, 6), 16)
+            };
+        }
+
+        function rgb2hexColor(rgb) {
+            return '#' + dec2hex(rgb.r) + dec2hex(rgb.g) + dec2hex(rgb.b);
+        }
+
+        function dec2hex(n) {
+            var hex = n.toString(16);
+            if (hex.length < 2) {
+                return '0' + hex;
+            }
+            return hex;
+        }
+
+        function rgb2yuv(rgb){
+            var y = clamp(rgb.r *  0.29900 + rgb.g *  0.587   + rgb.b * 0.114);
+            var u = clamp(rgb.r * -0.16874 + rgb.g * -0.33126 + rgb.b * 0.50000 + 128);
+            var v = clamp(rgb.r *  0.50000 + rgb.g * -0.41869 + rgb.b * -0.08131 + 128);
+            return {y:y, u:u, v:v};
+        }
+
+        function yuv2rgb(yuv){
+            var y = yuv.y;
+            var u = yuv.u;
+            var v = yuv.v;
+            var r = clamp(y + (v - 128) *  1.40200);
+            var g = clamp(y + (u - 128) * -0.34414 + (v - 128) * -0.71414);
+            var b = clamp(y + (u - 128) *  1.77200);
+            return {r:r,g:g,b:b};
+        }
+
+        function clamp(n){
+            if (n<0) { return 0;}
+            if (n>255) { return 255;}
+            return Math.floor(n);
+        }
+
+        var listaEtiquetas = document.getElementsByTagName("button");
+        for (var i = 0; i < listaEtiquetas.length; i++) {
+            if(parImpar(i)) {
+                var idEtiqueta = listaEtiquetas[i].getAttribute("id");
+                var colorEtiqueta = listaEtiquetas[i].getAttribute("name");
+                var colorTextoEtiqueta = invertCssColor(colorEtiqueta);
+                $( "#" + idEtiqueta ).css({
+                    "color": colorTextoEtiqueta,
+                    "background-color": colorEtiqueta
+                });
+            }
+        }
+
+    </script>
+}
+
+@main("Etiquetas", scripts) {
+
+    <h2>Mis etiquetas</h2>
+    <ul class="nav nav-tabs nav-justified">
+        <li><a href="@routes.GestionTareasController.listaTareasPendientes(usuario.getId)">Tareas pendientes</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasTerminadas(usuario.getId)">Tareas terminadas</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasCalendario(usuario.getId)">Calendario</a></li>
+    </ul>
+
+    <br>
+
+    @if(mensaje != null) {
+        <div class="alert alert-success">@mensaje</div>
+    }
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    <a class="btn btn-primary" href="@routes.GestionEtiquetasController.formularioNuevaEtiqueta(usuario.getId())">
+                        <span class="glyphicon glyphicon-plus"></span> Crear etiqueta
+                    </a>
+                </th>
+                <th>
+                    <a class="btn btn-default" href="@routes.GestionTareasController.listaTareasPendientes(usuario.getId())">
+                        <span class="glyphicon glyphicon-tasks"></span> Volver a tareas
+                    </a>
+                </th>
+            </tr>
+            <tr>
+                @if(etiquetas.size() == 1) {
+                    <th>@etiquetas.size() etiqueta</th>
+                } else {
+                    <th>@etiquetas.size() etiquetas</th>
+                }
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(etiquetas.isEmpty) {
+                <tr>
+                    <td class="col-sm-9">
+                        <h4><small>No hay etiquetas</small></h4>
+                    </td>
+                    <td></td>
+                </tr>
+            } else {
+                @for(etiqueta <- etiquetas) {
+                    <tr>
+                        <td class="col-sm-9">
+                            <button id="@etiqueta.getId" name="@etiqueta.getColor" class="botoncolor btn" style="background-color:@colorCompletoConAlmohadilla(etiqueta.getColor); text-decoration:none;">
+                                <strong>@etiqueta.getTitulo</strong>
+                            </button>
+                        </td>
+                        <td>
+                            <a href="@routes.GestionEtiquetasController.formularioEditaEtiqueta(etiqueta.getId())">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                            </a>
+                            &nbsp;
+                            <button id="borrarEtiquetaId" class="btn-link m-0 p-0" data-toggle="confirmation" name="@routes.GestionEtiquetasController.borraEtiqueta(etiqueta.getId())"
+                           data-title="¿Borrar etiqueta?" data-content="No podrás deshacer esta acción."
+                           data-btn-ok-label="Borrar" data-btn-ok-icon="glyphicon glyphicon-trash" data-btn-ok-class="btn-success"
+                           data-btn-cancel-label="Cancelar" data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger">
+                               <a onmouseover="" style="cursor: pointer;">
+                                   <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                               </a>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}

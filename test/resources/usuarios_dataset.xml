@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <Usuario id="999" login="pove" nombre="Jorge" apellidos="Poveda"
+             password="putopavel1234" eMail="pove@alu.ua.es" fechaNacimiento="1996-11-16"/>
+    <Usuario id="1000" login="juangutierrez" nombre="Juan" apellidos="Gutierrez"
+             password="123456789" eMail="aplicationt1@gmail.com" fechaNacimiento="1993-12-10"/>
+    <Usuario id="1002" login="juangutierrez2" nombre="Juan" apellidos="Gutierrez Dos"
+             password="123456789" eMail="juan.gutierrez2@gmail.com" fechaNacimiento="1993-12-10"/>
+    <Usuario id="1003" login="juangutierrez3" nombre="Juan" apellidos="Gutierrez Tres"
+             password="123456789" eMail="juan.gutierrez3@gmail.com" fechaNacimiento="1993-12-10"/>
+    <Usuario id="1004" login="lisa" nombre="Juan" apellidos="1 2"
+              password="lisa" eMail="lisa@gmail.com" fechaNacimiento="1993-09-10"/>
+    <Usuario id="1005" login="pepe" nombre="Pepe" apellidos="apellido1 apellido2"
+            password="pepe" eMail="pepe@gmail.com" fechaNacimiento="1993-09-10"/>
+    <Tablero id="1000" nombre="Tablero test 1" administradorId="1000" privado="0"/>
+    <Tablero id="1001" nombre="Tablero test 2" administradorId="1000" privado="0"/>
+    <Tablero id="1002" nombre="Tablero test privado" administradorId="1005" privado="1"/>
+    <Etiqueta id="1000" titulo="Deportes" color="#fbca04" usuarioId="1000"/>
+    <Etiqueta id="1001" titulo="MADS" color="#e99695" usuarioId="1000"/>
+    <Etiqueta id="1002" titulo="Compras de navidad" color="#0e8a16" usuarioId="1000"/>
+    <Etiqueta id="1003" titulo="Deportes" color="#0e8a16" usuarioId="1002"/>
+    <Etiqueta id="1004" titulo="Etiqueta 1 prueba tablero" color="#e99695" usuarioId="1004"/>
+    <Etiqueta id="1005" titulo="Etiqueta 2 prueba tablero" color="#0e8a16" usuarioId="1004"/>
+    <Tarea id="1000" titulo="Renovar DNI" cuerpo="Tengo que renovar mi DNI antes del lunes"
+           usuarioId="1000" terminada="1"/>
+    <Tarea id="1001" titulo="Práctica 1 MADS" cuerpo="# Que comience el juego!" usuarioId="1000" terminada="0"/>
+    <Tarea id="1002" titulo="Práctica 2 MADS" cuerpo="# Que siga el juego!" usuarioId="999" terminada="0"/>
+    <Persona_Tablero participantes_id="1003" tableros_id="1000"/>
+    <Persona_Tablero participantes_id="1004" tableros_id="1002"/>
+</dataset>

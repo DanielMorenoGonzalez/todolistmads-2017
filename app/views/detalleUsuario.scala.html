@@ -1,0 +1,25 @@
+@(usuario: Usuario, mensaje: String)
+
+@main("Detalle de usuario") {
+
+    @if(mensaje != null) {
+        <div class="alert alert-success">
+          @mensaje
+        </div>
+    }
+
+    <h1>Detalle del usuario @usuario.getId()</h1>
+    <ul>
+        <li><strong>Login: </strong> @usuario.getLogin()</li>
+        <li><strong>Email: </strong> @usuario.getEmail()</li>
+        <li><strong>Nombre: </strong> @usuario.getNombre()</li>
+        <li><strong>Apellidos: </strong> @usuario.getApellidos()</li>
+        <li><strong>Fecha de nacimiento: </strong>
+            @if(usuario.getFechaNacimiento() != null) {
+                @usuario.getFechaNacimiento().format("dd-MM-yyyy")
+            }</li>
+        <li><strong>Vista de calendario por defecto: </strong> @usuario.getVistaCalendario</li>
+    </ul>
+
+    <a class="btn btn-primary" href="@routes.UsuarioController.formularioActualizarPerfil(usuario.getId())">Editar perfil</a>
+}

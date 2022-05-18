@@ -1,0 +1,210 @@
+@(tablero: Tablero, addParticipanteForm: Form[Usuario], participantes: List[Usuario], mensaje: String, mensajeModal: String)
+@urlParticipanteABorrar = {""}
+@urlParticipanteABorrar1 = {""}
+@urlParticipanteABorrar2 = {""}
+@scripts = {
+    <script type="text/javascript">
+    var mensajeM = "@mensajeModal"
+    if(mensajeM != ""){
+        $("#exampleModal").modal('show')
+    }
+
+    $('#desapuntarse1').confirmation({
+        rootSelector: '[data-toggle=confirmation]',
+        onConfirm: function () {
+            urlParticipanteABorrar1 = document.getElementById("desapuntarse1").name;
+            $.ajax({
+                url: urlParticipanteABorrar1,
+                type: 'DELETE',
+                success: function () {
+                    //refresh the page
+                    location.reload();
+                }
+            });
+        }
+    });
+
+    $('#desapuntarse2').confirmation({
+        rootSelector: '[data-toggle=confirmation]',
+        onConfirm: function () {
+            urlParticipanteABorrar2 = document.getElementById("desapuntarse2").name;
+            var idUsuarioConectado = urlParticipanteABorrar2.split(":")[1];
+            urlParticipanteABorrar2 =  urlParticipanteABorrar2.split(":")[0];
+            $.ajax({
+                url: urlParticipanteABorrar2,
+                type: 'DELETE',
+                success: function () {
+                    document.location.href = "/usuarios/"+idUsuarioConectado+"/tableros";
+                }
+            });
+        }
+    });
+
+    $('[data-toggle=confirmation]').confirmation({
+        rootSelector: '[data-toggle=confirmation]',
+        onConfirm: function () {
+            var boton = this[0];
+            urlParticipanteABorrar = boton.name;
+            $.ajax({
+                url: urlParticipanteABorrar,
+                type: 'DELETE',
+                success: function () {
+                    //refresh the page
+                    location.reload();
+                }
+            });
+        }
+    });
+    </script>
+}
+@main("Participantes del tablero " + tablero.getNombre, scripts) {
+    <h2>Tablero <strong>@tablero.getNombre</strong></h2>
+    <ul class="nav nav-tabs nav-justified">
+        <li><a href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId())">Tareas pendientes</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasTerminadasTablero(tablero.getId())">Tareas terminadas</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasCalendarioTablero(tablero.getId)">Calendario</a></li>
+        <li><a href="@routes.GestionTablerosController.listaParticipantes(tablero.getId())">Participantes</a></li>
+    </ul>
+
+    <br/>
+    @if(mensaje != null && mensaje != "") {
+        <div class="alert alert-success">
+            @mensaje
+        </div>
+    }
+
+    @if(tablero.getAdministrador.getId != Long.valueOf(session.get("connected"))
+            && !tablero.getParticipantes.exists(_.getId == Long.valueOf(session.get("connected")))) {
+        <form style="display: inline;" method="post" action="@routes.GestionTablerosController.apuntarUsuarioATablero(tablero.getId)">
+            <a class="btn btn-primary" href="javascript:" onclick="this.parentNode.submit()">
+                <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> Apuntarse
+            </a>
+        </form>
+    } else {
+        @if(tablero.getParticipantes.exists(_.getId == Long.valueOf(session.get("connected"))) &&
+        !tablero.isPrivado()) {
+            <button id="desapuntarse1" class="btn-link m-0 p-0" data-toggle="confirmation" name="@routes.GestionTablerosController.desapuntarUsuarioDeTablero(tablero.getId())"
+           data-title="¿Desapuntarte del tablero?" data-content="Luego podrás volver a apuntarte si quieres."
+           data-btn-ok-label="Desapuntarse" data-btn-ok-icon="glyphicon glyphicon-thumbs-down" data-btn-ok-class="btn-success"
+           data-btn-cancel-label="Cancelar" data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger">
+           <a class="btn btn-primary" href="javascript:" onmouseover="" style="cursor: pointer;">
+               <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span> Desapuntarse
+           </a>
+            </button>
+        } else {
+            @if(tablero.getParticipantes.exists(_.getId == Long.valueOf(session.get("connected"))) &&
+            tablero.isPrivado()) {
+            <button id="desapuntarse2" class="btn-link m-0 p-0" data-toggle="confirmation" name="@routes.GestionTablerosController.desapuntarUsuarioDeTablero(tablero.getId()):@session.get("connected")"
+           data-title="¿Desapuntarte del tablero?" data-content="Tendrás que volver a pedir al administrador del tablero que te apunte."
+           data-btn-ok-label="Desapuntarse" data-btn-ok-icon="glyphicon glyphicon-thumbs-down" data-btn-ok-class="btn-success"
+           data-btn-cancel-label="Cancelar" data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger">
+           <a class="btn btn-primary" href="javascript:" onmouseover="" style="cursor: pointer;">
+               <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span> Desapuntarse
+           </a>
+            </button>
+            }
+        }
+    }
+
+    <h2><small>Administrador</small></h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre de usuario</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="col-sm-6">@tablero.getAdministrador.getLogin</td>
+                <td>@tablero.getAdministrador.getEmail</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2><small>Lista de participantes</small></h2>
+    <table class="table table-striped">
+        <thead>
+            @if(tablero.getAdministrador.getId == Long.valueOf(session.get("connected"))) {
+            <tr>
+                <th>
+                    <a class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                        <span class="glyphicon glyphicon-plus"></span> Añadir participante
+                    </a>
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            @helper.form(action = routes.GestionTablerosController.apuntarUsuarioATableroPorAdministrador(tablero.getId())){
+                          <div class="modal-header">
+                            <h3 class="modal-title" id="exampleModalLabel">Añadir participante al tablero <strong>@tablero.getNombre</strong></h3>
+                            <a class="close" href="@routes.GestionTablerosController.listaParticipantes(tablero.getId())" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                              </a>
+                          </div>
+
+                          <div class="modal-body">
+
+                              <fieldset>
+                                  @helper.inputText(addParticipanteForm("login"), '_label -> "Introduce el login del usuario", 'class -> "form-control", 'style -> "font-weight: normal;")
+                              </fieldset>
+
+                              @if(mensajeModal != "" && mensajeModal!="Accedido por url") {
+                                  <div class="alert alert-danger">
+                                  @mensajeModal
+                                  </div>
+                              }
+
+                          </div>
+                          <div class="modal-footer">
+
+                            <a class="btn btn-default" role="button" href="@routes.GestionTablerosController.listaParticipantes(tablero.getId())">Cancelar</a>
+                            <input type="submit" class="btn btn-primary" value="Añadir participante">
+
+                          </div>
+                      }
+                        </div>
+                      </div>
+                    </div>
+                </th>
+            </tr>
+        }
+            <tr>
+                <th>Nombre de usuario</th>
+                <th>Email</th>
+                <th>
+                    @if(tablero.getAdministrador.getId == Long.valueOf(session.get("connected"))) {
+                        Acción
+                    }
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(participantes.isEmpty) {
+                <td class="col-sm-6">
+                    <h4><small>No hay participantes</small></h4>
+                </td>
+                <td></td>
+            } else {
+                @for(participante <- participantes) {
+                    <tr>
+                        <td class="col-sm-6">@participante.getLogin</td>
+                        <td>@participante.getEmail</td>
+                        <td>
+                            @if(tablero.getAdministrador.getId == Long.valueOf(session.get("connected"))) {
+                                <button id="quitarParticipanteId" class="btn-link m-0 p-0" data-toggle="confirmation" name="@routes.GestionTablerosController.quitarAUsuarioDeTableroPorAdministrador(tablero.getId(),participante.getId())"
+                                   data-title="¿Eliminar participante?" data-content="No podrás deshacer esta acción."
+                                   data-btn-ok-label="Eliminar" data-btn-ok-icon="glyphicon glyphicon-remove" data-btn-ok-class="btn-success"
+                                   data-btn-cancel-label="Cancelar" data-btn-cancel-icon="glyphicon glyphicon-ban-circle" data-btn-cancel-class="btn-danger">
+                                   <a onmouseover="" style="cursor: pointer;">
+                                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                    </a>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}

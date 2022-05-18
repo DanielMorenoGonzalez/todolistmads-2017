@@ -1,0 +1,109 @@
+@import java.util
+@(tareas: util.List[Tarea], usuario: Usuario, tablero: Tablero, mensaje: String, nombreTablero: String)
+@scripts = {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            function modificarFechas(event, delta, revertFunc) {
+                const nuevaFechaInicio = event.start ? event.start.format("DD/MM/YYYY HH:mm") : event.end.format("DD/MM/YYYY HH:mm");
+                const nuevaFechaLimite = event.end ? event.end.format("DD/MM/YYYY HH:mm") : event.start.format("DD/MM/YYYY HH:mm");
+                console.log("La tarea " + event.title + " con id " + event.id + " se ha movido a (" + nuevaFechaInicio + ", " + nuevaFechaLimite + ")");
+                $.ajax({
+                    url: "@routes.GestionTareasController.modificarFechaTarea(-1)"
+                        .replace("-1", event.id), // hack
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        fechaInicio: nuevaFechaInicio,
+                        fechaLimite: nuevaFechaLimite
+                    }),
+                    success: function () {
+                        Alert.info('Tarea movida correctamente');
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        const errorMessage = jqXHR.responseText ? jqXHR.responseText : errorThrown;
+                        Alert.warn('No se ha podido mover la tarea: ' + errorMessage);
+                        revertFunc();
+                    }
+                })
+            }
+            $('#calendar').fullCalendar({
+                @if(usuario.getVistaCalendario != null) {
+                defaultView: '@usuario.getVistaCalendario.getNombreVistaPlugin',
+                }
+                locale: 'es',
+                buttonText: {
+                    today: 'hoy',
+                    month:    'mes',
+                    week:     'semana',
+                    day:      'día',
+                    list:     'lista'
+                },
+                header: {
+                    left: 'month,agendaWeek,agendaDay',
+                    center:   'title',
+                    right:  'today prev,next'
+                },
+                events: [
+                    @for(tarea <- tareas) {
+                    {
+                        id: '@tarea.getId',
+                        title: '@tarea.getTitulo',
+                        start: '@(if(tarea.getFechaInicio != null) tarea.getFechaInicio else tarea.getFechaLimite)',
+                        end: '@tarea.getFechaLimite',
+                        url: '@routes.GestionTareasController.grabaTareaModificada(tarea.getId)'
+                    },
+                    }
+                ],
+                timeFormat: 'H(:mm)',
+                editable: true,
+                eventDrop: modificarFechas,
+                eventResize: modificarFechas
+            });
+            Alert = {
+                show: function($div, msg) {
+                    $div.find('.alert-msg').text(msg);
+                    if ($div.css('display') === 'none') {
+                        // fadein, fadeout.
+                        $div.fadeIn(100).delay(2000).fadeOut(200);
+                    }
+                },
+                info: function(msg) {
+                    this.show($('#alert-info'), msg);
+                },
+                warn: function(msg) {
+                    this.show($('#alert-warn'), msg);
+                }
+            };
+            $('body').on('click', '.alert-close', function() {
+                $(this).parents('.alert').hide();
+            });
+        });
+    </script>
+}
+
+@main("Tareas del usuario " + usuario.getLogin, scripts) {
+    <h2>Tablero <strong>@nombreTablero</strong></h2>
+    <ul class="nav nav-tabs nav-justified">
+        <li><a href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId())">Tareas pendientes</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasTerminadasTablero(tablero.getId())">Tareas terminadas</a></li>
+        <li><a href="@routes.GestionTareasController.listaTareasCalendarioTablero(tablero.getId)">Calendario</a></li>
+        <li><a href="@routes.GestionTablerosController.listaParticipantes(tablero.getId())">Participantes</a></li>
+    </ul>
+    @if(mensaje != null) {
+        <div class="alert alert-success">@mensaje</div>
+    }
+    @if(usuario.getVistaCalendario == null) {
+        <div class="alert alert-info fade in" style="margin-top: 5px">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>Consejo!</strong> Puedes seleccionar una vista de calendario por defecto desde
+            <a href="@routes.UsuarioController.formularioActualizarPerfil(usuario.getId)">Editar Perfil</a>.
+        </div>
+    }
+    <div id="alert-info" class="alert alert-info alert-top" role="alert">
+        <span class="alert-msg"></span>
+    </div>
+    <div id="alert-warn" class="alert alert-warning alert-top" role="alert">
+        <span class="alert-msg"></span>
+    </div>
+    <div id='calendar'></div>
+}

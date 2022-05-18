@@ -1,0 +1,29 @@
+@(usuario: Usuario, tableroForm: Form[Tablero], mensaje: String)
+@scripts = {
+    <script>
+            // Esto sirve para que el checkbox de Privado - Público que se vea como un Toogle
+            $('#privado').bootstrapToggle({
+                on: 'Privado',
+                off: 'Público'
+            });
+    </script>
+}
+    @main("Nuevo tablero", scripts) {
+        @if(mensaje != "") {
+            <div class="alert alert-danger">
+            @mensaje
+            </div>
+        }
+        <h1>Nuevo tablero para @usuario.getLogin</h1>
+        @helper.form(action = routes.GestionTablerosController.crearNuevoTablero(usuario.getId)) {
+            <fieldset>
+                <legend>Nuevo tablero</legend>
+                @helper.inputText(tableroForm("nombre"), '_label -> "Nombre", '_size -> 70)
+                @helper.checkbox(tableroForm("privado"), '_label -> "Tipo de tablero", '_title -> "Elige si quieres que tu tablero sea privado o público")
+            </fieldset>
+            <p>
+                <input type="submit" class="btn btn-primary" value="Guardar">
+                <a class="btn btn-warning" href="@routes.GestionTablerosController.listarTableros(usuario.getId())">Cancelar</a>
+            </p>
+        }
+    }

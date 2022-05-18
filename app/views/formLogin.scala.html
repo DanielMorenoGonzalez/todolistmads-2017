@@ -1,0 +1,45 @@
+@(loginForm: Form[Login], mensaje: String)
+@main("Iniciar sesión en ToDoList") {
+    @if(mensaje != "") {
+        <div class="col-xs-6 col-xs-offset-3 alert alert-danger">
+            @mensaje
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Iniciar sesión</h3></div>
+                <div class="panel-body">
+                    @helper.form(action = routes.UsuarioController.loginUsuario()) {
+                        <fieldset>
+                            @helper.inputText(loginForm("username"), '_label -> "Usuario o email", '_showConstraints -> false, 'class -> "form-control col-xs-12", 'style -> "margin-bottom:10px;", 'required -> true)
+                            @helper.inputPassword(loginForm("password"), '_label -> "Contraseña", '_showConstraints -> false, 'class -> "form-control col-xs-12", 'style -> "margin-bottom:10px;", 'required -> true)
+                        </fieldset>
+                        <div class="form-group">
+                            <div class="col-xs-12">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    Iniciar sesión
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-xs-10 col-xs-offset-2">
+                            ¿Eres nuevo? <a href="@routes.UsuarioController.registroUsuario()">Regístrate</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

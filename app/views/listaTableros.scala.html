@@ -1,0 +1,102 @@
+@(tablerosAdministrados: List[Tablero], tablerosParticipa: List[Tablero], restoTableros: List[Tablero],
+        usuario: Usuario, mensaje: String)
+
+    @main(title = "Tableros del usuario " + usuario.getLogin()) {
+        @if(mensaje != null) {
+            <div class="alert alert-success">@mensaje</div>
+        }
+        <h2>Tableros que administra @usuario.getLogin</h2>
+        <table class="table table-striped">
+            <tr>
+                <th>Nombre tablero</th>
+                <th>Acción</th>
+            </tr>
+            @if(tablerosAdministrados.isEmpty()) {
+                <td class="col-sm-8">
+                    <h4><small>No hay tableros</small></h4>
+                </td>
+                <td></td>
+            } else {
+                @for(tablero <- tablerosAdministrados) {
+                    <tr>
+                        <td class="col-sm-8">
+                            <a href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId())">
+                                @if(tablero.isPrivado()) {
+                                    <span class="glyphicon glyphicon-lock"></span>
+                                } else {
+                                    <span class="glyphicon glyphicon-globe"></span>
+                                }
+                                 @tablero.getNombre
+                            </a>
+                        </td>
+                        <td> - </td>
+                    </tr>
+                }
+            }
+        </table>
+
+        <h2>Tableros en los que participa @usuario.getLogin</h2>
+        <table class="table table-striped">
+            <tr>
+                <th>Nombre tablero</th>
+                <th>Acción</th>
+            </tr>
+            @if(tablerosParticipa.isEmpty()) {
+                <td class="col-sm-8">
+                    <h4><small>No hay tableros</small></h4>
+                </td>
+                <td></td>
+            } else {
+                @for(tablero <- tablerosParticipa) {
+                    <tr>
+                        <td class="col-sm-8">
+                            <a href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId())">
+                                @if(tablero.isPrivado()) {
+                                    <span class="glyphicon glyphicon-lock"></span>
+                                } else {
+                                    <span class="glyphicon glyphicon-globe"></span>
+                                }
+                                 @tablero.getNombre
+                            </a>
+                        </td>
+                        <td> - </td>
+                    </tr>
+                }
+            }
+        </table>
+
+        <h2>Resto de tableros</h2>
+        <table class="table table-striped">
+            <tr>
+                <th>Nombre tablero</th>
+                <th>Acción</th>
+            </tr>
+            @if(restoTableros.isEmpty()) {
+                <td class="col-sm-8">
+                    <h4><small>No hay tableros</small></h4>
+                </td>
+                <td></td>
+            } else {
+                @for(tablero <- restoTableros) {
+                    <tr>
+                        <td class="col-sm-8">
+                            <a href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId())">
+                                <span class="glyphicon glyphicon-globe"></span> @tablero.getNombre
+                            </a>
+                        </td>
+                        <td>
+                            <form method="post" action="@routes.GestionTablerosController.apuntarUsuarioATablero(tablero.getId)">
+                                <a href="javascript:" onclick="this.parentNode.submit()">
+                                    <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> Apuntarse
+                                </a>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+
+        <a class="btn btn-primary" href="@routes.GestionTablerosController.formularioNuevoTablero(usuario.getId)">
+            <span class="glyphicon glyphicon-plus"></span> Nuevo tablero
+        </a>
+    }

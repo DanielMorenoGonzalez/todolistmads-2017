@@ -1,0 +1,47 @@
+@(idUsuario: Long, idEtiqueta: Long, titulo: String, color: String, mensaje: String, tablero: Tablero)
+
+@main("Modificar etiqueta") {
+    @if(mensaje != "") {
+        <div class="alert alert-danger">
+            @mensaje
+        </div>
+    }
+    <h1>Modificar etiqueta <strong>@titulo</strong></h1>
+    @helper.form(action = routes.GestionEtiquetasController.grabaEtiquetaModificada(idEtiqueta)) {
+        <fieldset>
+            @if(tablero != null) {
+                <legend>Modificar etiqueta del tablero <strong>@tablero.getNombre</strong></legend>
+            } else {
+                <legend>Modificar etiqueta</legend>
+            }
+            <div class="row">
+                <div class="col-sm-6">
+                    <dl id="titulo_field">
+                        <dt><label for="titulo">Título</label></dt>
+                        <dd><input type="text" id="titulo" name="titulo" value="@titulo" size="40" class="form-control" /></dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <dl id="color_field">
+                        <dt><label for="color">Color</label></dt>
+                        <dd><input type="text" id="color" name="color" value="@color" class="jscolor form-control" readOnly/></dd>
+                    </dl>
+                </div>
+            </div>
+        </fieldset>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Guardar">
+            @if(tablero != null) {
+                <a class="btn btn-warning" href="@routes.GestionEtiquetasController.listarEtiquetasTablero(tablero.getId)">
+                    Cancelar
+                </a>
+            } else {
+                <a class="btn btn-warning" href="@routes.GestionEtiquetasController.listarEtiquetas(idUsuario)">
+                    Cancelar
+                </a>
+            }
+        </p>
+    }
+}

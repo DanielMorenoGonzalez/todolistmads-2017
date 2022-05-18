@@ -1,0 +1,73 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing a sample home page
+# GET           /                                 controllers.HomeController.index
+# An example controller showing how to use dependency injection
+GET           /count                                           controllers.CountController.count
+# An example controller showing how to write asynchronous code
+GET           /message                                         controllers.AsyncController.message
+
+
+# Nuestra aplicacion
+
+GET           /                                             controllers.UsuarioController.formularioLogin()
+GET           /acerca-de                                    controllers.AcercaDeController.acercaDe()
+GET           /saludo/:msg                                  controllers.UsuarioController.saludo(msg: String)
+GET           /registro                                     controllers.UsuarioController.formularioRegistro()
+POST          /registro                                     controllers.UsuarioController.registroUsuario()
+GET           /login                                        controllers.UsuarioController.formularioLogin()
+POST          /login                                        controllers.UsuarioController.loginUsuario()
+GET           /usuarios/:id                                 controllers.UsuarioController.detalleUsuario(id: Long)
+GET           /logout                                       controllers.UsuarioController.logout()
+
+GET           /usuarios/:id/tareas/nueva                    controllers.GestionTareasController.formularioNuevaTarea(id: Long)
+POST          /usuarios/:id/tareas/nueva                    controllers.GestionTareasController.creaNuevaTarea(id: Long)
+GET           /usuarios/:id/tareas                          controllers.GestionTareasController.listaTareasPendientes(id: Long)
+GET           /usuarios/:id/tareas-terminadas               controllers.GestionTareasController.listaTareasTerminadas(id: Long)
+GET           /usuarios/:id/calendario-tareas               controllers.GestionTareasController.listaTareasCalendario(id: Long)
+
+GET           /usuarios/:id/editar                          controllers.UsuarioController.formularioActualizarPerfil(id: Long)
+POST          /usuarios/:id/editar                          controllers.UsuarioController.actualizarPerfilUsuario(id: Long)
+
+GET           /usuarios/:id/tableros                        controllers.GestionTablerosController.listarTableros(id: Long)
+GET           /usuarios/:id/tableros/nuevo                  controllers.GestionTablerosController.formularioNuevoTablero(id: Long)
+POST          /usuarios/:id/tableros/nuevo                  controllers.GestionTablerosController.crearNuevoTablero(id: Long)
+GET           /usuarios/:id1/tableros/:id2/tareas/nueva     controllers.GestionTablerosController.formularioNuevaTareaEnTablero(id1: Long, id2: Long)
+POST          /usuarios/:id1/tableros/:id2/tareas/nueva     controllers.GestionTablerosController.crearNuevaTareaEnTablero(id1: Long, id2: Long)
+
+GET           /tareas/:id/editar                            controllers.GestionTareasController.formularioEditaTarea(id: Long)
+POST          /tareas/:id/editar                            controllers.GestionTareasController.grabaTareaModificada(id: Long)
+POST          /tareas/:id/cambiar-fechas                    controllers.GestionTareasController.modificarFechaTarea(id: Long)
+POST          /tareas/:id/terminar                          controllers.GestionTareasController.grabaTareaTerminada(id: Long)
+POST          /tareas/:id/restaurar                         controllers.GestionTareasController.restaurarTareaTerminada(id: Long)
+DELETE        /tareas/:id                                   controllers.GestionTareasController.borraTarea(id: Long)
+GET           /tareas/:id/asignar-etiqueta                  controllers.GestionTareasController.formularioAsociarEtiquetaATarea(id: Long)
+POST          /tareas/:id/asignar-etiqueta                  controllers.GestionTareasController.asociarEtiquetaATarea(id: Long)
+POST          /tareas/:id1/quitar-etiqueta/:id2             controllers.GestionTareasController.quitarEtiquetaDeTarea(id1: Long, id2: Long)
+
+GET           /tableros/:id/tareas                          controllers.GestionTareasController.listaTareasPendientesTablero(id: Long)
+GET           /tableros/:id/tareas-terminadas               controllers.GestionTareasController.listaTareasTerminadasTablero(id: Long)
+GET           /tableros/:id/calendario-tareas               controllers.GestionTareasController.listaTareasCalendarioTablero(id: Long)
+GET           /tableros/:id/participantes                   controllers.GestionTablerosController.listaParticipantes(id: Long)
+POST          /tableros/:id/participantes                   controllers.GestionTablerosController.apuntarUsuarioATablero(id: Long)
+GET           /tableros/:id/participantes/nuevo             controllers.GestionTablerosController.formularioApuntarUsuarioATableroPorAdministrador(id: Long)
+POST          /tableros/:id/participantes/nuevo             controllers.GestionTablerosController.apuntarUsuarioATableroPorAdministrador(id: Long)
+DELETE        /tableros/:id1/participantes/:id2             controllers.GestionTablerosController.quitarAUsuarioDeTableroPorAdministrador(id1: Long, id2: Long)
+
+DELETE        /tableros/:id/desapuntarse                    controllers.GestionTablerosController.desapuntarUsuarioDeTablero(id: Long)
+
+GET           /usuarios/:id/etiquetas                       controllers.GestionEtiquetasController.listarEtiquetas(id: Long)
+GET           /usuarios/:id/etiquetas/nueva                 controllers.GestionEtiquetasController.formularioNuevaEtiqueta(id: Long)
+POST          /usuarios/:id/etiquetas/nueva                 controllers.GestionEtiquetasController.creaNuevaEtiqueta(id: Long)
+
+GET           /etiquetas/:id/editar                         controllers.GestionEtiquetasController.formularioEditaEtiqueta(id: Long)
+POST          /etiquetas/:id/editar                         controllers.GestionEtiquetasController.grabaEtiquetaModificada(id: Long)
+DELETE        /etiquetas/:id                                controllers.GestionEtiquetasController.borraEtiqueta(id: Long)
+
+GET           /tableros/:id/etiquetas                       controllers.GestionEtiquetasController.listarEtiquetasTablero(id: Long)
+GET           /usuarios/:id1/tableros/:id2/etiquetas/nueva  controllers.GestionTablerosController.formularioNuevaEtiquetaEnTablero(id1: Long, id2: Long)
+POST          /usuarios/:id1/tableros/:id2/etiquetas/nueva  controllers.GestionTablerosController.crearNuevaEtiquetaEnTablero(id1: Long, id2: Long)
+# Map static resources from the /public folder to the /assets URL path
+GET           /assets/*file                                    controllers.Assets.versioned(path="/public", file: Asset)

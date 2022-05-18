@@ -1,0 +1,119 @@
+@(usuario: Usuario, idTarea: Long, titulo: String, cuerpo: String, mensaje: String, fechaInicio: String, fechaLimite: String, tablero: Tablero, etiquetas: List[Etiqueta])
+@scripts = {
+    <script>
+            function transformMarkdown() {
+                var converter = new showdown.Converter(),
+                        text = $('#cuerpo').val(),
+                        html = converter.makeHtml(text);
+                $('#vistaprevia').html(html)
+            }
+
+            $('#cuerpo').on('keyup', transformMarkdown);
+            $(transformMarkdown);
+            var startDate = false;
+            @if(!fechaInicio.isEmpty) {
+            startDate = moment("@fechaInicio", "DD/MM/YYYY HH:mm");
+            }
+            var limitDate = false;
+            var minDate = false;
+            @if(!fechaLimite.isEmpty) {
+            limitDate = moment("@fechaLimite", "DD/MM/YYYY HH:mm");
+            limitDate.add(1, "minutes");
+            minDate = limitDate.subtract(1, "minutes");
+            }
+
+            const datetimepickerFechaInicio = $("#datetimepickerFechaInicio");
+            const datetimepickerFechaLimite = $("#datetimepickerFechaLimite");
+
+            datetimepickerFechaInicio.datetimepicker({
+                locale: "es",
+                showClear: true,
+                maxDate: limitDate,
+                useCurrent: false,
+                defaultDate: startDate
+            });
+            datetimepickerFechaLimite.datetimepicker({
+                locale: "es",
+                showClear: true,
+                minDate: startDate,
+                useCurrent: false,
+                defaultDate: limitDate
+            });
+
+            $(function () {
+                console.log(("ready!"));
+                datetimepickerFechaInicio.on("dp.change", function (e) {
+                    console.log(("fecha inicio change"));
+                    $("#datetimepickerFechaLimite").data("DateTimePicker").minDate(moment.min(e.date ? moment(e.date) : moment(), minDate ? minDate : moment().subtract({minutes: 1})))
+                });
+                datetimepickerFechaLimite.on("dp.change", function (e) {
+                    console.log(("fecha limite change"));
+                    $("#datetimepickerFechaInicio").data("DateTimePicker").maxDate(e.date ? moment(e.date) : false)
+                });
+            });
+    </script>
+}
+
+@main("Modificar Tarea", scripts) {
+    @if(mensaje != "") {
+        <div class="alert alert-danger">
+        @mensaje
+        </div>
+    }
+    <h1>Modificar tarea <strong>@titulo</strong></h1>
+    @helper.form(action = routes.GestionTareasController.grabaTareaModificada(idTarea)) {
+        <fieldset>
+            @if(tablero != null) {
+                <legend>Modificar Tarea del tablero @tablero.getNombre</legend>
+            } else {
+                <legend>Modificar Tarea</legend>
+            }
+            <dl id="titulo_field">
+                <dt><label for="titulo">Título</label></dt>
+                <dd><input type="text" id="titulo" name="titulo" value="@titulo" size="40"/></dd>
+            </dl>
+            <div class="row">
+                <div class="col-md-6">
+                    <dl id="cuerpo_field">
+                        <dt><label for="cuerpo">Título</label></dt>
+                        <dd>
+                            <textarea id="cuerpo" name="cuerpo" rows="10" cols="40" title="El cuerpo de la nota">@cuerpo</textarea>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-md-5 col-md-offset-1">
+                    <dl class=" " id="vistaprevia_field">
+                        <dt><label for="vistaprevia">Vista Previa</label></dt>
+                        <dd><p id="vistaprevia"></p></dd>
+                    </dl>
+                </div>
+            </div>
+            <dl id="titulo_field">
+                <div class="row">
+                    <div class='col-sm-6'>
+                        <label for="datetimepickerFechaInicio">Fecha de inicio</label>
+                        <input type="text" id="datetimepickerFechaInicio" name="fecha_inicio" size="40"/>
+                    </div>
+                </div>
+            </dl>
+            <dl id="titulo_field">
+                <div class="row">
+                    <div class='col-sm-6'>
+                        <label for="datetimepickerFechaLimite">Fecha límite</label>
+                        <input type="text" id="datetimepickerFechaLimite" name="fecha_limite" size="40"/>
+                    </div>
+                </div>
+            </dl>
+        </fieldset>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Guardar">
+            @if(tablero != null) {
+                <a class="btn btn-warning" href="@routes.GestionTareasController.listaTareasPendientesTablero(tablero.getId)">
+                    Cancelar</a>
+            } else {
+                <a class="btn btn-warning" href="@routes.GestionTareasController.listaTareasPendientes(usuario.getId)">
+                    Cancelar</a>
+            }
+        </p>
+    }
+}
